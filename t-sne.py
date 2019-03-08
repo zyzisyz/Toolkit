@@ -126,7 +126,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 1000
+    max_iter = 10
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     check = []
     for i in all_labels:
-        if len(check) == 100:
+        if len(check) == 10:
             break
         if i not in check:
             check.append(i)
@@ -215,8 +215,11 @@ if __name__ == "__main__":
             x.append(vector[i])
 
     x = np.array(x)
+    print(x.shape)
     labels = np.array(labels)
     print('100 done!')
+    for i in labels:
+        print(i)
     Y = tsne(x, 2, 50, 50.0)
     pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
     pylab.savefig('foo.png')
