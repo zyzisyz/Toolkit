@@ -1,4 +1,5 @@
-#
+
+
 #  tsne.py
 #
 # Implementation of t-SNE in Python. The implementation was tested on Python
@@ -12,10 +13,13 @@
 #  Created by Laurens van der Maaten on 20-12-08.
 #  Copyright (c) 2008 Tilburg University. All rights reserved.
 
-import matplotlib
-matplotlib.use('Agg')
-## for server!!!
 
+# for server!!!
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+except:
+    print('error')
 import numpy as np
 import pylab
 
@@ -115,7 +119,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
         `Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
     """
 
-    # Check inputs
+    # spk inputs
     if isinstance(no_dims, float):
         print("Error: array X should have type float.")
         return -1
@@ -126,7 +130,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 10
+    max_iter = 300
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -185,13 +189,14 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     return Y
 
 
-def loader(path="./dvector.npz"):
+def loader(path="./a.npz"):
     return np.load(path)['vector'], np.load(path)['label']
 
 
 if __name__ == "__main__":
     # print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
     # print("Running example on 2,500 MNIST digits...")
+    print('hi')
     utt2spk = np.loadtxt("utt2spk", dtype=bytes).astype(str)
 
     vector, _ = loader()
@@ -200,26 +205,42 @@ if __name__ == "__main__":
     for i in utt2spk:
         all_labels.append(i[1])
 
-    check = []
+    spk = {}
+    # 6333
     for i in all_labels:
-        if len(check) == 10:
-            break
-        if i not in check:
-            check.append(i)
+        # if len(spk) == 10:
+        #    break
+        if i not in spk:
+            dic = {i: 0}
+            spk.update(dic)
+
+    for i in all_labels:
+        spk[i] += 1
+
+    check = []
+
+    for i in range(10):
+        key = max(spk, key=spk.get)
+        check.append(key)
+        spk.pop(key)
+
+    print(check)
 
     labels = []
     x = []
     for i in range(len(all_labels)):
         if all_labels[i] in check:
-            labels.append(all_labels[i])
+            labels.append(all_labels[i].strip('id'))
             x.append(vector[i])
 
     x = np.array(x)
     print(x.shape)
+
+    print(labels)
     labels = np.array(labels)
-    print('100 done!')
-    for i in labels:
-        print(i)
+    print('10 done!')
+
     Y = tsne(x, 2, 50, 50.0)
-    pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
+    pylab.scatter(Y[:, 0], Y[:, 1], 10, labels)
+    pylab.axis([-80, 80, -80, 80])
     pylab.savefig('foo.png')
