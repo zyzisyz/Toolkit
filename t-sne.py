@@ -130,7 +130,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 300
+    max_iter = 350
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -190,7 +190,42 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
 
 
 def loader(path="./a.npz"):
-    return np.load(path)['vector'], np.load(path)['label']
+    path = './xvector.ark'
+    count = 0
+    labels = []  # 放label的list
+    train = []
+    with open(path) as f:
+        lines = f.readlines()
+        for line in lines:
+            count += 1
+
+            print("load {} success!".format(count))
+
+            # 对每一行进行处理，提取出label和vector
+            line.strip('\n')
+            vector_string = ""
+            id = ""
+            is_vector = False
+            for c in line:
+                if c == '[':
+                    is_vector = True
+                if is_vector:
+                    if c != '[' and c != ']':
+                        vector_string += c
+                if (not is_vector) and c != " ":
+                    id += c
+            labels.append(id)
+            num_list = vector_string.split(' ')
+            num_list.pop()
+            del(num_list[0])
+            num_list = list(map(eval, num_list))
+
+            train.append(num_list)
+    labels = np.array(labels, dtype="<U32")
+
+    train = np.array(train, dtype="float64")
+    print('data prepare done!!!')
+    return train, labels
 
 
 if __name__ == "__main__":
@@ -199,7 +234,7 @@ if __name__ == "__main__":
     print('hi')
     utt2spk = np.loadtxt("utt2spk", dtype=bytes).astype(str)
 
-    vector, _ = loader()
+    vector, _ = loader(path='a.npz')
     all_labels = []
 
     for i in utt2spk:
@@ -243,4 +278,6 @@ if __name__ == "__main__":
     Y = tsne(x, 2, 50, 50.0)
     pylab.scatter(Y[:, 0], Y[:, 1], 10, labels)
     pylab.axis([-80, 80, -80, 80])
-    pylab.savefig('foo.png')
+    pylab.savefig('80.png')
+    pylab.axis([-100, 100, -100, 100])
+    pylab.savefig('100.png')
