@@ -130,7 +130,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 350
+    max_iter = 1000
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -190,7 +190,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
 
 
 def loader():
-    path = './xvector.ark'
+    path = './dvector.ark'
     count = 0
     labels = []  # 放label的list
     train = []
@@ -254,7 +254,9 @@ if __name__ == "__main__":
 
     check = []
 
-    for i in range(10):
+    N = 10
+
+    for i in range(N):
         key = max(spk, key=spk.get)
         check.append(key)
         spk.pop(key)
@@ -263,9 +265,10 @@ if __name__ == "__main__":
 
     labels = []
     x = []
+
     for i in range(len(all_labels)):
         if all_labels[i] in check:
-            labels.append(all_labels[i].strip('id'))
+            labels.append(check.index(all_labels[i]))
             x.append(vector[i])
 
     x = np.array(x)
@@ -276,13 +279,23 @@ if __name__ == "__main__":
     print('10 done!')
 
     Y = tsne(x, 2, 50, 50.0)
+
     
-    pylab.scatter(Y[:, 0], Y[:, 1], 10, check)
-    
+
+    pylab.scatter(Y[:, 0], Y[:, 1], 10, labels)
+
+    # 80
     pylab.axis([-80, 80, -80, 80])
     pylab.savefig('80.png')
 
+    # 100
     pylab.axis([-100, 100, -100, 100])
     pylab.savefig('100.png')
 
-    
+    # 60
+    pylab.axis([-60, 60, -60, 60])
+    pylab.savefig('60.png')
+
+    # 120
+    pylab.axis([-120, 120, -120, 120])
+    pylab.savefig('120.png')
