@@ -1,5 +1,3 @@
-
-
 #  tsne.py
 #
 # Implementation of t-SNE in Python. The implementation was tested on Python
@@ -22,6 +20,8 @@ except:
     print('error')
 import numpy as np
 import pylab
+import random
+import os
 
 
 def Hbeta(D=np.array([]), beta=1.0):
@@ -189,8 +189,8 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     return Y
 
 
-def loader(path="./a.npz"):
-    path = './xvector.ark'
+def loader():
+    path = './dvector.ark'
     count = 0
     labels = []  # 放label的list
     train = []
@@ -221,6 +221,7 @@ def loader(path="./a.npz"):
             num_list = list(map(eval, num_list))
 
             train.append(num_list)
+
     labels = np.array(labels, dtype="<U32")
 
     train = np.array(train, dtype="float64")
@@ -228,56 +229,89 @@ def loader(path="./a.npz"):
     return train, labels
 
 
+def get_int_label():
+    if os.path.exists('./spk.npz') == True:
+        print('load spk.npz success!')
+        return np.load('spk.npz')['spk'], np.load('spk.npz')['check']
+    else:
+        utt2spk = np.loadtxt('./utt2spk', dtype=bytes).astype(str)
+        all_labels = []
+        for i in utt2spk:
+            all_labels.append(i[1])
+
+        check = []
+        for i in all_labels:
+            if i not in check:
+                check.append(i)
+        spk = []
+
+        temp = []
+        for i in all_labels:
+            for j in range(len(check)):
+                if check[j] == i:
+                    temp.append(j)
+                    print('label', j)
+        spk = temp
+        np.savez('./spk.npz', spk=spk, check=check)
+        return spk, check
+
+
 if __name__ == "__main__":
     # print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
     # print("Running example on 2,500 MNIST digits...")
     print('hi')
-    utt2spk = np.loadtxt("utt2spk", dtype=bytes).astype(str)
 
-    vector, _ = loader(path='a.npz')
-    all_labels = []
+    vector, _ = loader()
 
-    for i in utt2spk:
-        all_labels.append(i[1])
+    labels, check = get_int_label()
 
-    spk = {}
+    spker = {}
+
     # 6333
-    for i in all_labels:
-        # if len(spk) == 10:
-        #    break
-        if i not in spk:
-            dic = {i: 0}
-            spk.update(dic)
+    for i in check:
+        dic = {i:0}
+        spker.update(dic)
+    labels=labels.tolist()
+    for i in range(len(vector)):
+        _id = labels[i]
+        spker[_id].append(vector[i].tolist())
 
-    for i in all_labels:
-        spk[i] += 1
+    check = random.shuffle(check)
 
-    check = []
-
-    for i in range(10):
-        key = max(spk, key=spk.get)
-        check.append(key)
-        spk.pop(key)
-
-    print(check)
-
-    labels = []
+    l = []
     x = []
-    for i in range(len(all_labels)):
-        if all_labels[i] in check:
-            labels.append(all_labels[i].strip('id'))
-            x.append(vector[i])
+    N = 15  # NNNNN
+    S_N = 100  # sample number
+    for i in check:
+        if Y > N:
+            break
+        if len(spker[i]) >= S_N:
+            Y.append(i)
+            for j in range(S_N):
+                x.append(spker[i][j])
 
     x = np.array(x)
     print(x.shape)
 
-    print(labels)
-    labels = np.array(labels)
-    print('10 done!')
+    l = np.array(l)
+
+    print('{} done!'.format(N))
 
     Y = tsne(x, 2, 50, 50.0)
-    pylab.scatter(Y[:, 0], Y[:, 1], 10, labels)
+    pylab.scatter(Y[:, 0], Y[:, 1], 10, l)
+
+    # 80
     pylab.axis([-80, 80, -80, 80])
     pylab.savefig('80.png')
+
+    # 100
     pylab.axis([-100, 100, -100, 100])
     pylab.savefig('100.png')
+
+    # 60
+    pylab.axis([-60, 60, -60, 60])
+    pylab.savefig('60.png')
+
+    # 120
+    pylab.axis([-120, 120, -120, 120])
+    pylab.savefig('120.png')
