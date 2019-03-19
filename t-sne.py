@@ -189,7 +189,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=50.0):
     return Y
 
 
-def loader(path="./a.npz"):
+def loader():
     path = './xvector.ark'
     count = 0
     labels = []  # 放label的list
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     print('hi')
     utt2spk = np.loadtxt("utt2spk", dtype=bytes).astype(str)
 
-    vector, _ = loader(path='a.npz')
+    vector, _ = loader()
     all_labels = []
 
     for i in utt2spk:
@@ -276,8 +276,13 @@ if __name__ == "__main__":
     print('10 done!')
 
     Y = tsne(x, 2, 50, 50.0)
-    pylab.scatter(Y[:, 0], Y[:, 1], 10, labels)
+    
+    pylab.scatter(Y[:, 0], Y[:, 1], 10, check)
+    
     pylab.axis([-80, 80, -80, 80])
     pylab.savefig('80.png')
+
     pylab.axis([-100, 100, -100, 100])
     pylab.savefig('100.png')
+
+    
